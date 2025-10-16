@@ -101,3 +101,31 @@ Merge the PR or push to `main`. CI will:
 - PRs are dry-run by design to avoid spend and DNS mutations.
 - Pushes to `main` perform real uploads and ENS updates.
 - Record your Holesky registry and resolver addresses in `AGENTS.md` to ensure future work can resume without context loss.
+
+## Manual Runs in Forks
+
+Forked repositories often don’t run workflows automatically until Actions are enabled. This repo includes manual triggers to let you run everything in a fork.
+
+Prerequisites in your fork
+- Enable Actions: Settings → Actions → General → Allow all actions and reusable workflows. In the Actions tab, approve the banner if shown.
+- Ensure workflows exist on your default branch: `.github/workflows/build-site.yml` and `.github/workflows/upload-to-filecoin-and-update-ens.yml`.
+- Add required secrets/vars in the fork: `FILECOIN_WALLET_KEY`, `ETHEREUM_RPC_URL`, `ENS_PRIVATE_KEY`, `ENS_NAME`, and (for Holesky) `ENS_REGISTRY_ADDRESS`.
+
+Run manually
+1) Build Site
+   - Actions → “Build Site” → Run workflow (choose branch).
+   - This creates the `site-dist` artifact.
+
+2) Upload to Filecoin + ENS
+   - Actions → “Upload to Filecoin + ENS” → Run workflow.
+   - Inputs:
+     - `build_run_id` (optional): ID of a prior Build Site run to pull the `site-dist` artifact from. Leave blank to build `site/` inline.
+     - `dry_run` (boolean): default true; set false to perform a real upload to Calibration.
+     - `update_ens` (boolean): default false; set true to update ENS after upload (requires ENS secrets/vars).
+
+Finding a run ID (optional)
+- Open the desired “Build Site” run and copy the Run ID from the page URL (or use the UI’s Run ID display). Paste it into `build_run_id` when manually running the upload workflow.
+
+Notes
+- Manual runs without `build_run_id` will copy `site/` to `dist/` inline. The secure pattern still uses the two‑workflow chain via `workflow_run` when not running manually.
+- To test the default chain in a fork, open a PR from a branch in the same fork targeting its `main`. If it still doesn’t auto-run, use the manual triggers above.
