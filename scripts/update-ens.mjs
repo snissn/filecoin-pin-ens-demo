@@ -29,7 +29,7 @@ async function main() {
   const IPFS_CID = requiredEnv('IPFS_CID')
   const ETHEREUM_RPC_URL = requiredEnv('ETHEREUM_RPC_URL')
   const ENS_PRIVATE_KEY = requiredEnv('ENS_PRIVATE_KEY')
-  const ENS_REGISTRY_ADDRESS = process.env.ENS_REGISTRY_ADDRESS || '0x00000000000C2E074eC69A0dFb2997Ba6C7d2e1e'
+  const ENS_REGISTRY_ADDRESS = process.env.ENS_REGISTRY_ADDRESS || '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
   const provider = new JsonRpcProvider(ETHEREUM_RPC_URL)
   const signer = new Wallet(ENS_PRIVATE_KEY, provider)
