@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Preflight: configuration
+      - name: "Preflight: configuration"
         run: |
           echo "No sensitive configuration required for Build Site. Proceeding."
       - name: Checkout

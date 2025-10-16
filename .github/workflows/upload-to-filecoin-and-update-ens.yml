@@ -28,7 +28,7 @@ jobs:
       checks: write
       pull-requests: write
     steps:
-      - name: Preflight: validate upload configuration
+      - name: "Preflight: validate upload configuration"
         run: |
           missing=()
           if [ -z "${{ secrets.FILECOIN_WALLET_KEY }}" ]; then missing+=(FILECOIN_WALLET_KEY); fi
