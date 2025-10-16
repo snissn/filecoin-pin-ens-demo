@@ -1,0 +1,12 @@
+# Build output
+dist/
+
+# Node
+node_modules/
+.npmrc
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+

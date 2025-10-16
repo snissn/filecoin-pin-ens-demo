@@ -1,0 +1,15 @@
+{
+  "name": "filecoin-pin-ens-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo: static website + Filecoin Pin upload + ENS contenthash update via GitHub Actions",
+  "scripts": {
+    "update:ens": "node scripts/update-ens.mjs"
+  },
+  "dependencies": {
+    "content-hash": "^2.5.2",
+    "ethers": "^6.12.1"
+  }
+}
+

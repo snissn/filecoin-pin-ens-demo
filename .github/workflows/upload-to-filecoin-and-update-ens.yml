@@ -1,0 +1,53 @@
+name: Upload to Filecoin + ENS
+
+on:
+  workflow_run:
+    workflows: ["Build Site"]
+    types: [completed]
+
+jobs:
+  upload:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout repo (trusted)
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist
+          github-token: ${{ github.token }}
+          repository: ${{ github.event.workflow_run.repository.full_name }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Upload to Filecoin
+        id: filecoin
+        uses: filecoin-project/filecoin-pin/upload-action@v1
+        with:
+          path: dist
+          walletPrivateKey: ${{ secrets.FILECOIN_WALLET_KEY }}
+          network: calibration
+          minStorageDays: "30"
+          filecoinPayBalanceLimit: "0.25"
+          dryRun: ${{ github.event.workflow_run.event != 'push' }}
+
+      - name: Set ENS contenthash (only on push to main)
+        if: ${{ github.event.workflow_run.event == 'push' }}
+        env:
+          ENS_NAME: ${{ vars.ENS_NAME || secrets.ENS_NAME }}
+          IPFS_CID: ${{ steps.filecoin.outputs.ipfsRootCid }}
+          ETHEREUM_RPC_URL: ${{ secrets.ETHEREUM_RPC_URL }}
+          ENS_PRIVATE_KEY: ${{ secrets.ENS_PRIVATE_KEY }}
+          ENS_REGISTRY_ADDRESS: ${{ vars.ENS_REGISTRY_ADDRESS }}
+        run: |
+          node --version
+          npm --version
+          npm install --no-audit --no-fund
+          node scripts/update-ens.mjs
+
