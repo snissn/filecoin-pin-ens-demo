@@ -46,12 +46,10 @@ jobs:
           if [ -z "${{ vars.ENS_NAME }}" ] && [ -z "${{ secrets.ENS_NAME }}" ]; then missing+=(ENS_NAME); fi
           if [ -z "${{ secrets.ETHEREUM_RPC_URL }}" ]; then missing+=(ETHEREUM_RPC_URL); fi
           if [ -z "${{ secrets.ENS_PRIVATE_KEY }}" ]; then missing+=(ENS_PRIVATE_KEY); fi
-          if [ -z "${{ vars.ENS_REGISTRY_ADDRESS }}" ]; then missing+=(ENS_REGISTRY_ADDRESS); fi
 
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::Missing required ENS configuration: ${missing[*]}"
             echo "- ENS_NAME can be set as a Repository variable (vars) or Secret"
-            echo "- ENS_REGISTRY_ADDRESS required for non‑mainnet (e.g., Holesky)."
             echo "Set these under Settings → Secrets and variables → Actions."
             exit 1
           fi
@@ -104,7 +102,6 @@ jobs:
           IPFS_CID: ${{ steps.filecoin.outputs.ipfsRootCid }}
           ETHEREUM_RPC_URL: ${{ secrets.ETHEREUM_RPC_URL }}
           ENS_PRIVATE_KEY: ${{ secrets.ENS_PRIVATE_KEY }}
-          ENS_REGISTRY_ADDRESS: ${{ vars.ENS_REGISTRY_ADDRESS }}
         run: |
           node --version
           npm --version
