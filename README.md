@@ -41,16 +41,30 @@ Set these in repository Settings → Secrets and variables:
 - Vars or Secrets: `ENS_NAME`
 - Vars (optional but recommended on Holesky): `ENS_REGISTRY_ADDRESS`
 
-### Step 1 — Local ENS update sanity check
-Run the script locally to confirm your Holesky ENS setup (resolver and permissions) before relying on CI:
+### Step 1 — Create a PR to get an IPFS CID (dry-run)
+Open a PR that changes something in `site/` (for example, edit `site/index.html`). CI will:
+- Build the site and publish the `site-dist` artifact.
+- Trigger the “Upload to Filecoin + ENS” workflow via `workflow_run`.
+- Run the Filecoin upload in `dryRun: true` (because the originating event is `pull_request`).
+- Compute and surface `ipfsRootCid` but skip the ENS update.
+
+Where to find the CID on the PR run:
+- In the job’s step logs for “Upload to Filecoin” (`ipfsRootCid: ...`).
+- In the job summary appended by the action (if available).
+- In the artifact `filecoin-pin-artifacts/context.json` (download from the run artifacts) under `ipfsRootCid`.
+
+This avoids the chicken‑and‑egg problem: you don’t need a CID ahead of time—the PR run computes it without spending or updating ENS.
+
+### Step 2 — Optional: Local ENS update sanity check using the PR’s CID
+After the PR run, use the `ipfsRootCid` from Step 1 to verify your Holesky ENS setup locally:
 
 ```bash
 cd filecoin-pin-ens-demo
 npm install
 
-# Provide a test CID and your Holesky settings
+# Use the ipfsRootCid from the PR run
 ENS_NAME=yourname.holesky.eth \
-IPFS_CID=bafybeigdyrzt4... \
+IPFS_CID=<ipfsRootCid_from_PR> \
 ETHEREUM_RPC_URL=https://holesky.example.org \
 ENS_PRIVATE_KEY=0xabc... \
 ENS_REGISTRY_ADDRESS=0xYourHoleskyRegistryAddress \
@@ -60,20 +74,13 @@ npm run update:ens
 Expected:
 - If the contenthash differs, a transaction is submitted and confirmed.
 - If it matches, the script exits with a no-op message.
-- If it errors with “No resolver set”, set a resolver for your name that supports `contenthash`.
-
-### Step 2 — PR dry‑run (no spend, no ENS change)
-Open a PR that changes something in `site/` (for example, edit `site/index.html`). CI will:
-- Build site and publish the `site-dist` artifact.
-- Trigger the “Upload to Filecoin + ENS” workflow via `workflow_run`.
-- Run the Filecoin upload in `dryRun: true` (because the originating event is `pull_request`).
-- Produce an `ipfsRootCid` output but skip the ENS update.
+- If it errors with “No resolver set”, set a resolver for your name that supports `contenthash` and retry.
 
 ### Step 3 — Push to main (real upload + ENS update)
 Merge the PR or push to `main`. CI will:
 - Build the site and publish the artifact.
 - Run the upload with `dryRun: false` (originating event is `push`).
-- Upload to Filecoin Calibration and output `ipfsRootCid`.
+- Upload to Filecoin Calibration and output the new `ipfsRootCid`.
 - Run `scripts/update-ens.mjs` to set your Holesky ENS name’s `contenthash` to the new IPFS CID.
 
 ### Verify
