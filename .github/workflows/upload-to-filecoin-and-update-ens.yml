@@ -67,10 +67,10 @@ jobs:
           minStorageDays: "30"
           filecoinPayBalanceLimit: "0.25"
           # Dry-run on PR-triggered workflow_run; for manual runs use input
-          dryRun: ${{ github.event_name == 'workflow_run' ? (github.event.workflow_run.event != 'push') : inputs.dry_run }}
+          dryRun: "${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event != 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') }}"
 
       - name: Set ENS contenthash (push to main or manual with update_ens=true)
-        if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push') || (github.event_name == 'workflow_dispatch' && inputs.update_ens) }}
+        if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.update_ens == 'true') }}
         env:
           ENS_NAME: ${{ vars.ENS_NAME || secrets.ENS_NAME }}
           IPFS_CID: ${{ steps.filecoin.outputs.ipfsRootCid }}
