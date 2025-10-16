@@ -51,7 +51,7 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.inputs.build_run_id }}
 
-      - name: Fallback: Build site locally (no artifact available)
+      - name: "Fallback: Build site locally (no artifact available)"
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_run_id == '' }}
         run: |
           mkdir -p dist
