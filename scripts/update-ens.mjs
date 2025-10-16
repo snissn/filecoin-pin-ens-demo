@@ -3,7 +3,7 @@
 // Requires: ETHEREUM_RPC_URL, ENS_PRIVATE_KEY, ENS_NAME, IPFS_CID
 // Optional: ENS_REGISTRY_ADDRESS (defaults to mainnet registry)
 
-import { Contract, JsonRpcProvider, Wallet, keccak256, toUtf8Bytes, getBytes, concat } from 'ethers'
+import { Contract, JsonRpcProvider, Wallet, keccak256, toUtf8Bytes, getBytes, concat, getAddress } from 'ethers'
 import contentHash from 'content-hash'
 
 function requiredEnv(name) {
@@ -29,10 +29,20 @@ async function main() {
   const IPFS_CID = requiredEnv('IPFS_CID')
   const ETHEREUM_RPC_URL = requiredEnv('ETHEREUM_RPC_URL')
   const ENS_PRIVATE_KEY = requiredEnv('ENS_PRIVATE_KEY')
-  const ENS_REGISTRY_ADDRESS = process.env.ENS_REGISTRY_ADDRESS || '0x00000000000C2E074eC69A0dFb2997Ba6C7d2e1e'
+  // Default to mainnet ENS registry only if connecting to mainnet; otherwise require explicit address
+  const RAW_REGISTRY = process.env.ENS_REGISTRY_ADDRESS || '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
   const provider = new JsonRpcProvider(ETHEREUM_RPC_URL)
   const signer = new Wallet(ENS_PRIVATE_KEY, provider)
+
+  const network = await provider.getNetwork()
+  const isMainnet = (network?.chainId === 1n)
+  if (!process.env.ENS_REGISTRY_ADDRESS && !isMainnet) {
+    throw new Error(`ENS_REGISTRY_ADDRESS not set for chainId=${network?.chainId}. Provide the registry address for your network (e.g., Holesky).`)
+  }
+
+  // Normalize and checksum address (accept lower/upper/mixed by forcing lowercase then checksumming)
+  const ENS_REGISTRY_ADDRESS = getAddress(RAW_REGISTRY.toLowerCase())
 
   const REGISTRY_ABI = [
     'function resolver(bytes32 node) view returns (address)'
@@ -70,4 +80,3 @@ main().catch((err) => {
   console.error(err)
   process.exit(1)
 })
-
