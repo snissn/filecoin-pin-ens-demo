@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,4 +23,3 @@ jobs:
         with:
           name: site-dist
           path: dist
-
