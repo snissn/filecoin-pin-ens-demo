@@ -47,7 +47,7 @@ Notes:
 - Pattern: Adopted the two‑workflow pattern from `filecoin-pin/upload-action` docs to isolate secrets and keep limits hardcoded in a trusted file.
 - PRs: The upload action runs with `dryRun: true` for PR events; avoids deposits and on‑chain interactions while still proving build determinism.
 - ENS: Updates only on push to `main` to prevent PR traffic from mutating production DNS. `scripts/update-ens.mjs` uses ethers + content-hash to encode the EIP‑1577 `contenthash`.
-- Action version: Using `filecoin-project/filecoin-pin/upload-action@v1` (semantic tag). For supply chain hardening, pin to a specific commit.
+- Action version: Using `filecoin-project/filecoin-pin/upload-action@v0.9.1`. For supply chain hardening, pin to a specific commit (e.g., `@2a8d3eb5454724b1ff24c74a284ab48b3173f237`).
 - Future work: Add preview links, gateway checks, environment‑gated approvals, and optional CDN once provider support and cost reporting are tightened.
 
 ## How to Contribute as an Agent
@@ -61,4 +61,3 @@ Notes:
 - Filecoin Pin Upload Action docs: `filecoin-pin/upload-action/README.md`, `action.yml`, `examples/`
 - ENS contenthash EIP‑1577 and namehash EIP‑137
 - Public Resolver: `setContenthash(bytes32 node, bytes hash)`
-
