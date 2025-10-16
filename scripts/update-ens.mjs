@@ -32,7 +32,16 @@ async function main() {
   const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
   const provider = new JsonRpcProvider(ETHEREUM_RPC_URL)
-  const signer = new Wallet(ENS_PRIVATE_KEY, provider)
+  function normalizePrivateKey(pk) {
+    const v = (pk || '').trim()
+    const prefixed = v.startsWith('0x') ? v : `0x${v}`
+    if (!/^0x[0-9a-fA-F]{64}$/.test(prefixed)) {
+      throw new Error('ENS_PRIVATE_KEY must be a 0x-prefixed 64-hex-character string (no quotes or whitespace).')
+    }
+    return prefixed
+  }
+
+  const signer = new Wallet(normalizePrivateKey(ENS_PRIVATE_KEY), provider)
 
   const REGISTRY_ABI = [
     'function resolver(bytes32 node) view returns (address)'
@@ -68,7 +77,8 @@ async function main() {
     // Not a CID, let content-hash try; will likely fail fast with a clear message
   }
 
-  const encoded = contentHash.fromIpfs(cidForEns)
+  const encodedNo0x = contentHash.fromIpfs(cidForEns)
+  const encoded = '0x' + encodedNo0x
 
   if (current && current.toLowerCase() === encoded.toLowerCase()) {
     console.log(`No-op: ${ENS_NAME} already points to ${IPFS_CID}`)
@@ -76,6 +86,9 @@ async function main() {
   }
 
   console.log(`Updating ${ENS_NAME} contenthash to IPFS CID ${IPFS_CID}…`)
+  console.log(`Original CID: ${IPFS_CID}`)
+  if (cidForEns !== IPFS_CID) console.log(`Converted to CIDv0: ${cidForEns}`)
+  console.log(`Encoded contenthash (hex, 0x-prefixed) length=${encoded.length}`)
   const tx = await resolver.setContenthash(node, encoded)
   console.log(`Submitted tx: ${tx.hash}`)
   const receipt = await tx.wait()
