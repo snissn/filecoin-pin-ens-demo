@@ -8,6 +8,7 @@ A minimal demo showing a static website deployed with the Filecoin Pin Upload Ac
   - `Build Site` (PRs + pushes to `main`)
   - `Upload to Filecoin + ENS` (runs after successful build)
 - `scripts/update-ens.mjs` to update ENS `contenthash` via ethers + content-hash
+  - Upload action reference: `filecoin-project/filecoin-pin/upload-action@v0.9.1` (or pin to commit)
 
 ## Setup
 1. Add repository secrets/vars:
