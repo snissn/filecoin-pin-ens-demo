@@ -42,17 +42,17 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
 
       - name: Download build artifacts (manual, from input run id)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_run_id != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_run_id != '' }}
         uses: actions/download-artifact@v4
         with:
           name: site-dist
           path: dist
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ inputs.build_run_id }}
+          run-id: ${{ github.event.inputs.build_run_id }}
 
       - name: Fallback: Build site locally (no artifact available)
-        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.build_run_id == '' || !inputs.build_run_id) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_run_id == '' }}
         run: |
           mkdir -p dist
           cp -R site/* dist/
