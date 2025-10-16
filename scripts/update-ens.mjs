@@ -4,6 +4,7 @@
 
 import { Contract, JsonRpcProvider, Wallet, keccak256, toUtf8Bytes, getBytes, concat } from 'ethers'
 import contentHash from 'content-hash'
+import { CID } from 'multiformats/cid'
 
 function requiredEnv(name) {
   const v = process.env[name]
@@ -51,7 +52,23 @@ async function main() {
   const resolver = new Contract(resolverAddr, RESOLVER_ABI, signer)
 
   const current = await resolver.contenthash(node).catch(() => '0x')
-  const encoded = contentHash.fromIpfs(IPFS_CID)
+
+  // content-hash library requires base58 (CIDv0) for ipfs-ns; convert when possible
+  let cidForEns = IPFS_CID
+  try {
+    const parsed = CID.parse(IPFS_CID)
+    if (parsed.version === 1) {
+      try {
+        cidForEns = parsed.toV0().toString()
+      } catch {
+        throw new Error('Provided CID is CIDv1 and cannot be converted to CIDv0 (required by content-hash). Ensure the CID is dag-pb with sha2-256, or provide a CIDv0 (Qm...).')
+      }
+    }
+  } catch {
+    // Not a CID, let content-hash try; will likely fail fast with a clear message
+  }
+
+  const encoded = contentHash.fromIpfs(cidForEns)
 
   if (current && current.toLowerCase() === encoded.toLowerCase()) {
     console.log(`No-op: ${ENS_NAME} already points to ${IPFS_CID}`)
@@ -69,4 +86,3 @@ main().catch((err) => {
   console.error(err)
   process.exit(1)
 })
-

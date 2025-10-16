@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "content-hash": "^2.5.2",
-    "ethers": "^6.12.1"
+    "ethers": "^6.12.1",
+    "multiformats": "^12.1.3"
   }
 }
-
