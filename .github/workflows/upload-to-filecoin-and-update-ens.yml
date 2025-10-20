@@ -82,7 +82,14 @@ jobs:
         run: |
           mkdir -p dist
           cp -R site/* dist/
-
+          
+      - name: Select random known good provider
+        run: |
+          known_good_provider_ids=(2 8 16)
+          selected_provider_id=${known_good_provider_ids[$RANDOM % ${#known_good_provider_ids[@]}]}
+          echo "PROVIDER_ID=$selected_provider_id" >> $GITHUB_ENV
+          echo "Selected known good provider ID: $selected_provider_id"
+          
       - name: Upload to Filecoin
         id: filecoin
         uses: filecoin-project/filecoin-pin/upload-action@v0.9.2
